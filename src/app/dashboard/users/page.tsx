@@ -1,23 +1,24 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { 
-  Search, 
-  ArrowUpDown, 
-  ChevronLeft, 
+import {
+  Search,
+  ArrowUpDown,
+  ChevronLeft,
   ChevronRight,
   MoreHorizontal,
   Pencil,
   Trash2,
   AlertCircle
 } from "lucide-react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ import { UserFormModal } from "@/components/dashboard/user-form-modal";
 import { EditUserModal } from "@/components/dashboard/edit-user-modal";
 import { mockUsers, UserData } from "@/lib/data/mock-users";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type SortColumn = keyof UserData | null;
 type SortDirection = "asc" | "desc";
@@ -65,6 +67,9 @@ export default function UsersPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<UserData | null>(null);
 
+  // Selection State
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
+
   // Sorting Logic
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -77,7 +82,7 @@ export default function UsersPage() {
 
   // Filtering Logic
   const filteredUsers = useMemo(() => {
-    return mockUsers.filter((user) => 
+    return mockUsers.filter((user) =>
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase()) ||
       user.phone.toLowerCase().includes(search.toLowerCase())
@@ -121,6 +126,32 @@ export default function UsersPage() {
     setEditDialogOpen(true);
   };
 
+  // Selection Handlers
+  const handleToggleUser = (userId: number) => {
+    const newSelected = new Set(selectedUserIds);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUserIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    const newSelected = new Set(selectedUserIds);
+    const allOnPageSelected = processedUsers.every(user => selectedUserIds.has(user.id));
+
+    if (allOnPageSelected) {
+      processedUsers.forEach(user => newSelected.delete(user.id));
+    } else {
+      processedUsers.forEach(user => newSelected.add(user.id));
+    }
+    setSelectedUserIds(newSelected);
+  };
+
+  const allSelectedOnPage = processedUsers.length > 0 && processedUsers.every(user => selectedUserIds.has(user.id));
+  const someSelectedOnPage = processedUsers.some(user => selectedUserIds.has(user.id)) && !allSelectedOnPage;
+
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 pb-16">
       {/* Top Nav Header */}
@@ -153,116 +184,130 @@ export default function UsersPage() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader className="border-zinc-800 bg-zinc-800/30">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-16">#</TableHead>
-              <TableHead 
-                className="cursor-pointer transition-colors hover:text-white"
-                onClick={() => handleSort("name")}
-              >
-                <div className="flex items-center">
-                  Name <SortIcon column="name" currentSort={sortColumn} />
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer transition-colors hover:text-white"
-                onClick={() => handleSort("email")}
-              >
-                <div className="flex items-center">
-                  Email <SortIcon column="email" currentSort={sortColumn} />
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer transition-colors hover:text-white"
-                onClick={() => handleSort("phone")}
-              >
-                <div className="flex items-center">
-                  Phone <SortIcon column="phone" currentSort={sortColumn} />
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer transition-colors hover:text-white"
-                onClick={() => handleSort("status")}
-              >
-                <div className="flex items-center">
-                  Status <SortIcon column="status" currentSort={sortColumn} />
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer transition-colors hover:text-white text-right"
-                onClick={() => handleSort("joiningDate")}
-              >
-                <div className="flex items-center justify-end">
-                  Joining Date <SortIcon column="joiningDate" currentSort={sortColumn} />
-                </div>
-              </TableHead>
-              <TableHead className="w-16 text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {processedUsers.length > 0 ? (
-              processedUsers.map((user, index) => (
-                <TableRow key={user.id} className="border-zinc-800 hover:bg-zinc-800/20">
-                  <TableCell className="font-medium text-zinc-500">
-                    {(currentPage - 1) * itemsPerPage + index + 1}
-                  </TableCell>
-                  <TableCell className="font-semibold text-zinc-100">{user.name}</TableCell>
-                  <TableCell className="text-zinc-400">{user.email}</TableCell>
-                  <TableCell className="text-zinc-400">{user.phone}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant="outline" 
-                      className={user.status === "Active" 
-                        ? "border-green-500/20 bg-green-500/10 text-green-500" 
-                        : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
-                      }
-                    >
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right text-zinc-400">{user.joiningDate}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:bg-zinc-800 hover:text-white">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        }
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-12 px-4">
+                  <Checkbox
+                    checked={allSelectedOnPage ? true : someSelectedOnPage ? "indeterminate" : false}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer transition-colors hover:text-white"
+                  onClick={() => handleSort("name")}
+                >
+                  <div className="flex items-center">
+                    Name <SortIcon column="name" currentSort={sortColumn} />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer transition-colors hover:text-white"
+                  onClick={() => handleSort("email")}
+                >
+                  <div className="flex items-center">
+                    Email <SortIcon column="email" currentSort={sortColumn} />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer transition-colors hover:text-white"
+                  onClick={() => handleSort("phone")}
+                >
+                  <div className="flex items-center">
+                    Phone <SortIcon column="phone" currentSort={sortColumn} />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer transition-colors hover:text-white"
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center">
+                    Status <SortIcon column="status" currentSort={sortColumn} />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer transition-colors hover:text-white text-right pr-8"
+                  onClick={() => handleSort("joiningDate")}
+                >
+                  <div className="flex items-center justify-end">
+                    Joining Date <SortIcon column="joiningDate" currentSort={sortColumn} />
+                  </div>
+                </TableHead>
+                <TableHead className="w-16 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {processedUsers.length > 0 ? (
+                processedUsers.map((user, index) => (
+                  <TableRow
+                    key={user.id}
+                    className={cn(
+                      "border-zinc-800 transition-colors",
+                      selectedUserIds.has(user.id) ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-zinc-800/20"
+                    )}
+                  >
+                    <TableCell className="px-4">
+                      <Checkbox
+                        checked={selectedUserIds.has(user.id)}
+                        onCheckedChange={() => handleToggleUser(user.id)}
                       />
-                      <DropdownMenuContent align="end" className="w-40 border-zinc-800 bg-zinc-900 text-zinc-100">
-                        <DropdownMenuItem 
-                          className="flex items-center gap-2 cursor-pointer focus:bg-zinc-800 focus:text-white"
-                          onClick={() => handleEditClick(user)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Edit details
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-zinc-800" />
-                        <DropdownMenuItem 
-                          variant="destructive"
-                          className="flex items-center gap-2 cursor-pointer focus:bg-destructive/10 focus:text-destructive"
-                          onClick={() => handleDeleteClick(user)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete user
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    </TableCell>
+                    <TableCell className="font-semibold text-zinc-100">{user.name}</TableCell>
+                    <TableCell className="text-zinc-400">{user.email}</TableCell>
+                    <TableCell className="text-zinc-400">{user.phone}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={user.status === "Active"
+                          ? "border-green-500/20 bg-green-500/10 text-green-500"
+                          : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
+                        }
+                      >
+                        {user.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-zinc-400 pr-8">{user.joiningDate}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:bg-zinc-800 hover:text-white">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent align="end" className="w-40 border-zinc-800 bg-zinc-900 text-zinc-100">
+                          <DropdownMenuItem
+                            className="flex items-center gap-2 cursor-pointer focus:bg-zinc-800 focus:text-white"
+                            onClick={() => handleEditClick(user)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Edit details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-zinc-800" />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            className="flex items-center gap-2 cursor-pointer focus:bg-destructive/10 focus:text-destructive"
+                            onClick={() => handleDeleteClick(user)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete user
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
+                    No users found matching your search.
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
-                  No users found matching your search.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      {/* Pagination Controls */}
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {/* Pagination Controls */}
         <div className="flex flex-col items-center justify-between border-t border-zinc-800 p-4 gap-4 sm:flex-row">
           <div className="text-sm text-zinc-500">
             Showing <span className="text-zinc-300">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
@@ -287,8 +332,8 @@ export default function UsersPage() {
                   key={page}
                   variant={currentPage === page ? "default" : "outline"}
                   size="sm"
-                  className={currentPage === page 
-                    ? "bg-primary text-white" 
+                  className={currentPage === page
+                    ? "bg-primary text-primary-foreground"
                     : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800"
                   }
                   onClick={() => setCurrentPage(page)}
@@ -345,10 +390,10 @@ export default function UsersPage() {
       </Dialog>
 
       {/* Edit User Modal */}
-      <EditUserModal 
-        open={editDialogOpen} 
-        onOpenChange={setEditDialogOpen} 
-        user={userToEdit} 
+      <EditUserModal
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        user={userToEdit}
       />
     </div>
   );

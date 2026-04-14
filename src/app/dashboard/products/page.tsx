@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
-import { ProductsResponse } from "@/types/product";
+import { useProducts } from "@/hooks/use-products";
 import { ProductCard } from "@/components/dashboard/product-card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,13 +14,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("default");
 
-  const { data, isLoading, isError, refetch } = useQuery<ProductsResponse>({
-    queryKey: ["products"],
-    queryFn: async () => {
-      const response = await apiClient.get("/products");
-      return response.data;
-    },
-  });
+  const { data, isLoading, isError, refetch } = useProducts();
 
   const products = data?.products || [];
 

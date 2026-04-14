@@ -7,11 +7,9 @@ import { Menu, X, LayoutDashboard } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+} from "@/components/ui/sheet";
 export default function DashboardLayout({
   children,
 }: {
@@ -72,11 +70,8 @@ export default function DashboardLayout({
 
       {/* Mobile Sidebar Drawer */}
       {mounted && (
-        <Dialog open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-          <DialogContent className="fixed inset-y-0 left-0 z-50 h-full w-64 max-w-xs border-r border-zinc-800 bg-zinc-950 p-0 shadow-lg animate-in slide-in-from-left duration-300">
-            <DialogHeader className="sr-only">
-               <DialogTitle>Navigation Menu</DialogTitle>
-            </DialogHeader>
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetContent side="left" className="w-64 border-zinc-800 bg-zinc-950">
             <div className="relative flex h-full flex-col">
               <div className="absolute right-4 top-4 z-10">
                 <Button
@@ -90,8 +85,8 @@ export default function DashboardLayout({
               </div>
               <Sidebar onClose={() => setIsMobileMenuOpen(false)} className="w-full border-r-0" />
             </div>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       )}
     </div>
   );

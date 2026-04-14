@@ -6,13 +6,13 @@ import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
@@ -46,8 +46,8 @@ export default function LoginPage() {
   const onSubmit = async (values: LoginFormValues) => {
     setLoading(true);
     try {
-      await login(values.email, "Demo User");
-      toast.success("Welcome back!");
+      await login(values.email, "Guest User");
+      toast.success("You have successfully logged in to the VeloDrive dashboard");
     } catch {
       toast.error("Login failed. Please try again.");
     } finally {
@@ -63,7 +63,7 @@ export default function LoginPage() {
             <LogIn className="h-6 w-6 text-primary" />
           </div>
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-white">
-            Welcome back
+            Welcome to VeloDrive
           </h2>
           <p className="mt-2 text-sm text-zinc-400">
             Please enter your details to sign in
@@ -97,7 +97,7 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -117,15 +117,15 @@ export default function LoginPage() {
                 />
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90" 
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90"
                   disabled={loading}
                 >
                   {loading ? "Signing in..." : "Sign in"}
                 </Button>
                 <p className="text-center text-sm text-zinc-500">
-                  Don&apos;t have an account?{" "}
+                  Don not have an account?{" "}
                   <Link href="/signup" className="font-semibold text-primary hover:text-primary/80">
                     Sign up
                   </Link>

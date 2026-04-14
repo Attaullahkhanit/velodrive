@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Settings, 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Settings,
   LogOut,
   Users
 } from "lucide-react";
@@ -36,8 +36,8 @@ export function Sidebar({ onClose, className }: SidebarProps) {
       className
     )}>
       <div className="flex h-16 items-center px-6">
-        <Link 
-          href="/dashboard/products" 
+        <Link
+          href="/dashboard/products"
           className="flex items-center gap-2"
           onClick={onClose}
         >
@@ -59,8 +59,8 @@ export function Sidebar({ onClose, className }: SidebarProps) {
               href={item.href}
               className={cn(
                 "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isActive 
-                  ? "bg-primary/10 text-primary" 
+                isActive
+                  ? "bg-primary/10 text-primary"
                   : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
               )}
               onClick={onClose}
@@ -89,9 +89,9 @@ export function Sidebar({ onClose, className }: SidebarProps) {
             <span className="truncate font-medium text-zinc-100">{user?.name}</span>
             <span className="truncate text-xs text-zinc-500">{user?.email}</span>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8 text-zinc-500 hover:bg-zinc-800 hover:text-white"
             onClick={logout}
           >
